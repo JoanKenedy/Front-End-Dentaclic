@@ -1,0 +1,51 @@
+{
+  country:"Mexico"
+  latitude:25.737921
+  locality:""
+  longitude:-100.288874
+  place:"San Nicolás de los Garza"
+  postcode:"66460"
+  region:"Nuevo León"
+  streetAndNumber:"Avenida Juan Pablo Ii 245"
+}
+{
+  country: "Mexico"
+  latitude: 19.377495
+  locality: "Benito Juárez"
+  longitude: -99.177394
+  place: "Mexico City"
+  postcode: "03200"
+  streetAndNumber: "Avenida Insurgentes Sur 1188"
+}
+
+{
+
+  country:"Mexico"
+  latitude:19.400753
+  locality:""
+  longitude:-99.269827
+  place:"Huixquilucan"
+  postcode:"52787"
+  region:"Mexico"
+  streetAndNumber:"Boulevard Interlomas 5"
+  }
+{
+  country: "Mexico"
+  latitude: 19.106404
+  locality: ""
+  longitude: -102.348693
+  place: "Apatzingán de la Constitución"
+  postcode: "60630"
+  region: "Michoacán"
+  streetAndNumber: "Avenida General Joaquín Amaro 1395"
+}
+{
+  country: "Mexico"
+  latitude: 28.406658
+  locality: ""
+  longitude: -106.850775
+  place: "Cuauhtémoc"
+  postcode: "31550"
+  region: "Chihuahua"
+  streetAndNumber: "Calle 10 De Mayo 2468"
+}

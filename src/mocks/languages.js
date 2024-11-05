@@ -1,0 +1,1 @@
+export const languagesArray = ['Español', 'Inglés', 'Ruso', 'Francés', 'Alemán', 'Italiano', 'Portugués', 'Chino', 'Japonés', 'Coreano', 'Árabe', 'Hindi', 'Holandés', 'Sueco', 'Griego', 'Turco', 'Polaco', 'Hebreo', 'Danés', 'Noruego']
