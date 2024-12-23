@@ -26,20 +26,17 @@ export const Profiles = () => {
   };
 
   const getSlug = (name) => {
-    const nameString = name.split(" ");
-    const slug = nameString.join("-");
+    const nameString = name?.split(" ");
+    const slug = nameString?.join("-");
 
-    return slug.toLocaleLowerCase();
+    return slug?.toLocaleLowerCase();
   };
 
   const endpointUsers =
     process.env.NEXT_PUBLIC_API + "buscar/getBuscarAllEspecialistas";
 
   const { data, error, loading } = useFetch(endpointUsers);
-  const elMap = data.especialistas?.map((especialista) =>
-    console.log(especialista.usuario?.nombre)
-  );
-
+  console.log(data.especialistas);
   return (
     <section className="w-full flex justify-center items-center relative z-[1] py-10 dark:bg-darkLightColor">
       <div className="w-full max-w-6xl px-4">
@@ -61,14 +58,14 @@ export const Profiles = () => {
               : ""}
             {data.especialistas?.map((profile) => (
               <SplideSlide
-                key={profile.usuario.uid}
+                key={profile.usuario?.uid}
                 className="flex justify-center items-center"
               >
                 <ProfileCard
-                  imgSrc={profile.usuario.img}
-                  name={profile.usuario.nombre}
-                  specialty={profile.rol}
-                  href={`/profile/${getSlug(profile.usuario.nombre)}/${
+                  imgSrc={profile.usuario?.img}
+                  name={profile.usuario?.nombre}
+                  specialty={profile?.rol}
+                  href={`/profile/${getSlug(profile.usuario?.nombre)}/${
                     profile._id
                   }`}
                 />

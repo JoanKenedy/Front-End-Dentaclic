@@ -10,10 +10,10 @@ export const FollowCard = ({ id, isFollowing, imgSrc, name, specialty, loggedIn 
   const textButton = isFollow ? 'Seguido' : 'Seguir'
 
   const getSlug = () => {
-    const nameString = name.split(' ')
-    const slug = nameString.join('-')
+    const nameString = name?.split(' ')
+    const slug = nameString?.join('-')
 
-    return slug.toLocaleLowerCase()
+    return slug?.toLocaleLowerCase()
   }
 
   const slug = getSlug()

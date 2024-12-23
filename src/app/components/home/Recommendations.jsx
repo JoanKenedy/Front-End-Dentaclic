@@ -45,8 +45,8 @@ export const Recommendations = ({ loggedIn }) => {
             key={recommendation._id}
             id={recommendation._id}
             isFollowing
-            imgSrc={recommendation.usuario.img}
-            name={recommendation.usuario.nombre}
+            imgSrc={recommendation.usuario?.img}
+            name={recommendation.usuario?.nombre}
             specialty={recommendation.especialidades[0]}
           />
         ))}
