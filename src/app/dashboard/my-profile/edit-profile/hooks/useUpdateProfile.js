@@ -225,20 +225,6 @@ export function useUpdateProfile() {
     }
   };
 
-  const changeImage = () => {
-    const endpoint =
-      process.env.NEXT_PUBLIC_API + "usuarios/" + personalData.uid;
-    fetch(endpoint, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "x-token": user.token,
-      },
-      body: JSON.stringify({
-        img: "https://cdn.dentarios.com.mx/assets/images/imagotipo-dentaclic.png",
-      }),
-    });
-  };
   const createSpecialist = () => {
     setIsLoading(true);
     const formData = new FormData();
