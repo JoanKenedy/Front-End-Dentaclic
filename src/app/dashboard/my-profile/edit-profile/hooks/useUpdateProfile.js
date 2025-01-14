@@ -226,12 +226,46 @@ export function useUpdateProfile() {
     }
   };
 
+  const changeImage = () => {
+    const endpoint =
+      process.env.NEXT_PUBLIC_API + "usuarios/" + personalData.uid;
+    const formData = new FormData();
+    if (image) {
+      formData.append("img", image);
+    } else {
+      console.error("No image selected.");
+      return; // Agregar un retorno aquí si no se ha seleccionado una imagen
+    }
+
+    // Agregar comprobaciones adicionales
+    if (!user.current || !user.current.token) {
+      console.error("No hay token de autenticación");
+      return;
+    }
+
+    fetch(endpoint, {
+      method: "PUT",
+      headers: {
+        "x-token": user.current.token,
+      },
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Imagen de perfil actualizada", data);
+      })
+      .catch((error) => {
+        console.error("Error al actualizar la imagen:", error);
+      });
+  };
+
   const createSpecialist = () => {
     setIsLoading(true);
+
     const formData = new FormData();
-    if (!userData) {
-      formData.append("usuario", personalData.uid);
-    }
+
+    // Agrega los datos del especialista al FormData
+    formData.append("usuario", personalData.uid);
     formData.append("codigoPostal", address.postcode);
     formData.append("latitud", address.latitude);
     formData.append("longitud", address.longitude);
@@ -239,35 +273,26 @@ export function useUpdateProfile() {
     formData.append("colonia", address.place);
     formData.append("calle", address.streetAndNumber);
     formData.append("numCelular", phone);
-    cedulas.forEach((cedula) => {
-      formData.append("cedulaProfesional", cedula);
-    });
-    specialties.forEach((especialidad) => {
-      formData.append("especialidades", especialidad);
-    });
-    experiences.forEach((experiencia) => {
-      formData.append("experiencias", experiencia);
-    });
 
-    educations.forEach((educacion) => {
-      formData.append("formacionAcademica", educacion);
-    });
-    languages.forEach((lenguaje) => {
-      formData.append("idioma", lenguaje);
-    });
+    cedulas.forEach((cedula) => formData.append("cedulaProfesional", cedula));
+    specialties.forEach((especialidad) =>
+      formData.append("especialidades", especialidad)
+    );
+    experiences.forEach((experiencia) =>
+      formData.append("experiencias", experiencia)
+    );
+    educations.forEach((educacion) =>
+      formData.append("formacionAcademica", educacion)
+    );
+    languages.forEach((lenguaje) => formData.append("idioma", lenguaje));
 
-    if (about) {
-      formData.append("sobreMi", about);
-    }
-    if (image) {
-      formData.append("img", image);
-    }
+    if (about) formData.append("sobreMi", about);
 
+    // Si hay imágenes adicionales, las agregamos
     if (images.length > 0) {
-      images.forEach((image) => {
-        formData.append("fotos", image);
-      });
+      images.forEach((image) => formData.append("fotos", image));
     }
+
     fetch(endpointEditSpecialist.current, {
       method: method.current,
       headers: {
@@ -278,36 +303,27 @@ export function useUpdateProfile() {
       .then(async (response) => {
         if (!response.ok) {
           const errorText = await response.text();
-          console.error("Error en la respuesta:", errorText);
           throw new Error(errorText);
         }
         return response.json();
       })
       .then((response) => {
-        console.log("Respuesta exitosa:", response);
+        console.log(
+          "Datos del especialista actualizados correctamente:",
+          response
+        );
         toast.success("Datos actualizados correctamente");
         window.location.assign("/dashboard");
       })
       .catch((error) => {
-        console.error("Error en el fetch:", error.message);
-        toast.error("Ocurrió un error al actualizar. Verifica tu conexión.");
+        console.error("Error en la actualización de datos:", error.message);
+        toast.error(
+          "Ocurrió un error al actualizar los datos. Verifica tu conexión."
+        );
       })
       .finally(() => setIsLoading(false));
   };
 
-  const changeImage = () => {
-    const endpoint =
-      process.env.NEXT_PUBLIC_API + "usuarios/" + personalData.uid;
-    const formData = new FormData();
-    formData.append("img", image);
-    fetch(endpoint, {
-      method: "PUT",
-      headers: {
-        "x-token": user.token,
-      },
-      body: formData,
-    });
-  };
   const verifyField = (collection, field) => {
     switch (collection) {
       case "cedula":
