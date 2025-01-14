@@ -75,8 +75,8 @@ export function useUpdateProfile() {
       if (userData.idioma) {
         setLanguages(userData.idioma);
       }
-      if (userData.fotos) {
-        setImages(userData.fotos);
+      if (userData.fotos && Array.isArray(userData.fotos)) {
+        setImages(userData.fotos); // Carga las imágenes desde la base de datos
       }
       if (userData.sobreMi) {
         setAbout(userData.sobreMi);
@@ -218,9 +218,10 @@ export function useUpdateProfile() {
       if (languages.length !== 0) {
         body.current.idioma = languages;
       }
-      if (image !== personalData.img) {
+      if (image) {
         changeImage();
       }
+
       createSpecialist();
     }
   };
@@ -258,9 +259,10 @@ export function useUpdateProfile() {
     if (about) {
       formData.append("sobreMi", about);
     }
-    if (image !== personalData.img) {
-      changeImage();
+    if (image) {
+      formData.append("img", image);
     }
+
     if (images.length > 0) {
       images.forEach((image) => {
         formData.append("fotos", image);
@@ -291,6 +293,20 @@ export function useUpdateProfile() {
         toast.error("Ocurrió un error al actualizar. Verifica tu conexión.");
       })
       .finally(() => setIsLoading(false));
+  };
+
+  const changeImage = () => {
+    const endpoint =
+      process.env.NEXT_PUBLIC_API + "usuarios/" + personalData.uid;
+    const formData = new FormData();
+    formData.append("img", image);
+    fetch(endpoint, {
+      method: "PUT",
+      headers: {
+        "x-token": user.token,
+      },
+      body: formData,
+    });
   };
   const verifyField = (collection, field) => {
     switch (collection) {
@@ -328,7 +344,6 @@ export function useUpdateProfile() {
         break;
     }
   };
-
   const handleNewImage = (e) => {
     const selectedFile = e.target.files[0];
     if (selectedFile) {
@@ -341,7 +356,7 @@ export function useUpdateProfile() {
         "image/gif",
       ];
       if (validImageTypes.includes(fileType)) {
-        setImage(URL.createObjectURL(selectedFile));
+        setImage(selectedFile); // Guarda el archivo de imagen en el estado
       } else {
         setImage(null);
         setImageError(
@@ -353,35 +368,31 @@ export function useUpdateProfile() {
       }
     }
   };
+
   const handleImagesChange = (e) => {
     const files = e.target.files;
-    const validImageTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/webp",
-      "image/gif",
-    ];
-    const imagesArray = [];
+    const maxFiles = 10;
+    const maxSize = 2 * 1024 * 1024; // 2MB
 
-    for (const file of files) {
-      if (validImageTypes.includes(file.type)) {
-        imagesArray.push(file);
-      } else {
-        setImageError(
-          "Por favor, sube una imagen válida (.jpg, .webp, .png, .gif)"
-        );
-        toast.error(
-          "Por favor, sube una imagen válida (.jpg, .webp, .png, .gif)"
-        );
-      }
-    }
-
-    if (imagesArray.length > 10) {
-      setImagesError("No puedes subir más de 10 imágenes");
+    if (files.length > maxFiles) {
+      setImagesError(`Máximo ${maxFiles} archivos permitidos`);
       return;
     }
 
-    setImages(imagesArray);
+    const validFiles = [];
+    for (const file of files) {
+      if (file.size > maxSize) {
+        setImagesError(
+          `El archivo ${file.name} supera el tamaño máximo permitido de ${
+            maxSize / 1024 / 1024
+          }MB`
+        );
+        return;
+      }
+      validFiles.push(file);
+    }
+
+    setImages(validFiles);
     setImagesError(null);
   };
 

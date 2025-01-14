@@ -72,7 +72,9 @@ export const FormEditProfile = () => {
           <label className="w-full relative" htmlFor={imageId}>
             <img
               className="w-full h-full aspect-square rounded-md object-cover"
-              src={image}
+              src={
+                typeof image === "string" ? image : URL.createObjectURL(image)
+              }
               alt="Foto de perfil"
             />
             <span className="text-xs bg-slate-700/80 text-white w-full flex justify-center items-center py-[2px] rounded-es-md rounded-ee-md absolute bottom-0 right-0">
@@ -314,13 +316,26 @@ export const FormEditProfile = () => {
         {imagesError && (
           <span className="text-red-600 text-xs mt-1">{imagesError}</span>
         )}
-        {images && images.length > 0 && (
-          <ul className="list-disc pl-4 mt-2">
-            {images.map((image, index) => (
-              <li key={index}>{image.name}</li>
+        <div className="w-full">
+          {images &&
+            images.map((imagen, index) => (
+              <div key={index} className="image-item">
+                <img
+                  src={
+                    typeof imagen === "string"
+                      ? imagen
+                      : URL.createObjectURL(imagen)
+                  }
+                  alt={`Imagen ${index + 1}`}
+                  className="w-[120px]"
+                />
+
+                <button onClick={() => handleRemoveField("images", index)}>
+                  Eliminar
+                </button>
+              </div>
             ))}
-          </ul>
-        )}
+        </div>
       </div>
 
       <div className="w-full p-4 grid mt-3 gap-2 border border-slate-100 rounded-xl shadow-xl lg:h-max lg:row-span-2">
