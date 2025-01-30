@@ -1,8 +1,11 @@
-import { useRef, useState } from "react";
-import { CalendarMonth, MapPin } from "@/app/components/icons/Icons";
+import { useRef, useState, useContext, useEffect } from "react";
+import { CalendarMonth, ClockIcon, MapPin } from "@/app/components/icons/Icons";
 import { SelectLocation } from "./SelectLocation";
 import { SelectSpecialty } from "./SelectSpecialty";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
+import { LoginContext } from "@/context/login";
+
+import { toast } from "sonner";
 
 export const CalendarSchedule = ({
   showSchedule,
@@ -29,45 +32,105 @@ export const InfoCalendar = ({
   profileData,
   isProfile,
 }) => {
+  const user = useRef();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      user.current = JSON.parse(window.localStorage.getItem("user"));
+    }
+  }, []);
   // Estados para capturar selecciones
   const [selectedMonth, setSelectedMonth] = useState("");
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
-
+  const [selectedEspeciality, setSelectedEspeciality] = useState("");
+  const [buttonText, setButtonText] = useState("Confirmar Cita");
+  const [isDisabled, setIsDisabled] = useState(false);
   // Manejadores de eventos
+  const { personalData } = useContext(LoginContext);
+
   const handleMonthChange = (e) => setSelectedMonth(e.target.value);
   const handleDaySelect = (day) => setSelectedDay(day);
   const handleTimeSelect = (time) => setSelectedTime(time);
 
+  const handleEspecialtySelect = (specialty) => {
+    setSelectedEspeciality(specialty);
+  };
   // Función para subir los datos a la base de datos
   const handleSubmit = async () => {
-    if (!selectedMonth || !selectedDay || !selectedTime) {
-      alert("Por favor, selecciona mes, día y hora.");
+    if (
+      !selectedMonth ||
+      !selectedDay ||
+      !selectedTime ||
+      !selectedEspeciality
+    ) {
+      toast.error("Por favor, selecciona mes, día, hora y especialidad.");
       return;
     }
 
     const appointmentData = {
-      month: selectedMonth,
+      year: new Date().getFullYear(),
+      month: parseInt(selectedMonth, 10),
       day: selectedDay,
+      specialty: selectedEspeciality,
       time: selectedTime,
+      specialist: profileData?._id,
+      paciente: personalData?.uid,
     };
-    console.log(appointmentData);
 
     try {
-      // Simulación de envío a la base de datos
-      console.log("Subiendo datos:", appointmentData);
-      // Aquí puedes usar un servicio como fetch o axios para enviar los datos
-      // Ejemplo:
-      // await fetch('/api/appointments', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(appointmentData),
-      // });
+      const API_BASE = process.env.NEXT_PUBLIC_API;
+      if (!API_BASE) {
+        console.error("Error: NEXT_PUBLIC_API no está definido");
+        toast.error("Error de configuración en la API.");
+        return;
+      }
 
-      alert("Cita agendada con éxito");
+      setButtonText("Agendando...");
+      setIsDisabled(true);
+
+      const endpointCreateCitas = `${API_BASE}citas/`;
+
+      const response = await fetch(endpointCreateCitas, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-token": user.current.token,
+        },
+        body: JSON.stringify({
+          year: appointmentData.year,
+          dia: appointmentData.day,
+          mes: appointmentData.month,
+          especialidad: appointmentData.specialty,
+          hora: appointmentData.time,
+          especialista: appointmentData.specialist,
+          paciente: appointmentData.paciente,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorResponse = await response.json();
+        console.error("Error en la solicitud:", errorResponse);
+        toast.error(
+          "Error al agendar la cita: " +
+            (errorResponse.message || "No autorizado.")
+        );
+        setButtonText("Confirmar Cita");
+        setIsDisabled(false);
+        return;
+      }
+
+      const responseData = await response.json();
+      console.log("Cita agendada con éxito:", responseData);
+      toast.success("Cita agendada con éxito.");
+      setShowSchedule(false);
+
+      setButtonText("Esperando a ser aceptada");
     } catch (error) {
       console.error("Error al agendar la cita:", error);
-      alert("Hubo un problema al agendar la cita.");
+      toast.error("Hubo un problema al agendar la cita.");
+
+      setButtonText("Confirmar Cita");
+      setIsDisabled(false);
     }
   };
 
@@ -75,17 +138,9 @@ export const InfoCalendar = ({
   const selectElement = useRef(null);
   useOnClickOutside(selectElement, handleClickOutsideFn);
 
-  const mesConTreinta = ["Abril", "Junio", "Septiembre", "Noviembre"];
-  const mesConVeiteOcho = "Febrero";
-  const mesConTreintaUno = [
-    "Enero",
-    "Marzo",
-    "Mayo",
-    "Julio",
-    "Agosto",
-    "Octubre",
-    "Diciembre",
-  ];
+  const mesConTreinta = ["04", "06", "09", "11"];
+  const mesConVeiteOcho = "02";
+  const mesConTreintaUno = ["01", "03", "05", "07", "08", "10", "12"];
 
   const getDayInMonth = (month) => {
     if (mesConTreinta.includes(month)) return 30;
@@ -107,91 +162,123 @@ export const InfoCalendar = ({
       <span className="flex gap-2 text-white bg-blue-500 px-4 py-2 rounded-t-xl">
         <CalendarMonth className="w-6 h-6" /> Agendar Cita
       </span>
-      <article className="w-full px-4">
-        <SelectLocation profileData={profileData} />
-      </article>
-      <article className="w-full px-4">
-        <SelectSpecialty profileData={profileData} />
-      </article>
-      <article className="px-4">
-        <div className="w-full grid grid-cols-7 gap-4">
-          {/* Selección de Mes */}
-          <section className="flex flex-col justify-center items-center col-span-7">
-            <header className="flex flex-col justify-center items-center mb-2">
-              <span className="text-center text-xs">Seleccionar Mes</span>
-              <select
-                className="text-xs px-2 py-1 border rounded-md"
-                onChange={handleMonthChange}
-                value={selectedMonth}
-              >
-                <option value="">Seleccione un mes</option>
-                <option value="Enero">Enero</option>
-                <option value="Febrero">Febrero</option>
-                <option value="Marzo">Marzo</option>
-                <option value="Abril">Abril</option>
-                <option value="Mayo">Mayo</option>
-                <option value="Junio">Junio</option>
-                <option value="Julio">Julio</option>
-                <option value="Agosto">Agosto</option>
-                <option value="Septiembre">Septiembre</option>
-                <option value="Octubre">Octubre</option>
-                <option value="Noviembre">Noviembre</option>
-                <option value="Diciembre">Diciembre</option>
-              </select>
-            </header>
-          </section>
+      {isDisabled ? (
+        <>
+          <article className="w-full px-4 text-center">
+            <p>
+              Tu cita esta pendiente, estamos a espera de ser aceptada por tu
+              especialista. Gracias por confiar en nosotros.
+            </p>
+            <ClockIcon className="w-28 h-28 m-auto" />
+          </article>
+        </>
+      ) : (
+        <>
+          <article className="w-full px-4">
+            <SelectLocation profileData={profileData} />
+          </article>
+          <article className="w-full px-4">
+            <SelectSpecialty
+              profileData={profileData}
+              onEspecialtyChange={handleEspecialtySelect}
+            />
+          </article>
+          <article className="px-4">
+            <div className="w-full grid grid-cols-7 gap-4">
+              {/* Selección de Mes */}
+              <section className="flex flex-col justify-center items-center col-span-7">
+                <header className="flex flex-col justify-center items-center mb-2">
+                  <span>Año en curso {new Date().getFullYear()}</span>
 
-          {/* Selección de Día */}
-          <section className="flex flex-wrap justify-center col-span-7">
-            <header className="flex flex-col justify-center items-center mb-2 w-full">
-              <span className="text-center text-xs">Seleccionar Día</span>
-            </header>
-            <div className="grid grid-cols-7 gap-2">
-              {Array.from({ length: dayInMonth }).map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-8 h-8 flex justify-center items-center border rounded-md text-xs ${
-                    selectedDay === index + 1 ? "bg-blue-300 text-white" : ""
-                  }`}
-                  onClick={() => handleDaySelect(index + 1)}
-                >
-                  {index + 1}
-                </button>
-              ))}
-            </div>
-          </section>
+                  <span className="text-center text-xs">Seleccionar Mes</span>
 
-          {/* Selección de Hora */}
-          <section className="flex flex-col justify-center items-center col-span-7 mt-4">
-            <header className="flex flex-col justify-center items-center mb-2">
-              <span className="text-center text-xs">Seleccionar Hora</span>
-            </header>
-            <div className="flex flex-wrap justify-center gap-2">
-              {["10:00", "12:00", "14:00", "16:00", "18:00"].map((time) => (
-                <button
-                  key={time}
-                  className={`px-2 py-1 rounded-md text-xs ${
-                    selectedTime === time
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-300 text-white"
-                  }`}
-                  onClick={() => handleTimeSelect(time)}
-                >
-                  {time}
-                </button>
-              ))}
+                  <select
+                    className="text-xs px-2 py-1 border rounded-md"
+                    onChange={handleMonthChange}
+                    value={selectedMonth}
+                  >
+                    <option value="">Seleccione un mes</option>
+                    <option value="01">Enero</option>
+                    <option value="02">Febrero</option>
+                    <option value="03">Marzo</option>
+                    <option value="04">Abril</option>
+                    <option value="05">Mayo</option>
+                    <option value="06">Junio</option>
+                    <option value="07">Julio</option>
+                    <option value="08">Agosto</option>
+                    <option value="09">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                  </select>
+                </header>
+              </section>
+
+              {/* Selección de Día */}
+              <section className="flex flex-wrap justify-center col-span-7">
+                <header className="flex flex-col justify-center items-center mb-2 w-full">
+                  <span className="text-center text-xs">Seleccionar Día</span>
+                </header>
+                <div className="grid grid-cols-7 gap-2">
+                  <div className="text-center">D</div>
+                  <div className="text-center">L</div>
+                  <div className="text-center">M</div>
+                  <div className="text-center">M</div>
+                  <div className="text-center">J</div>
+                  <div className="text-center">V</div>
+                  <div className="text-center">S</div>
+                  {Array.from({ length: dayInMonth }).map((_, index) => (
+                    <button
+                      key={index}
+                      className={`w-8 h-8 flex justify-center items-center border rounded-md text-xs ${
+                        selectedDay === index + 1
+                          ? "bg-blue-300 text-white"
+                          : ""
+                      }`}
+                      onClick={() => handleDaySelect(index + 1)}
+                    >
+                      {index + 1}
+                    </button>
+                  ))}
+                </div>
+              </section>
+
+              {/* Selección de Hora */}
+              <section className="flex flex-col justify-center items-center col-span-7 mt-4">
+                <header className="flex flex-col justify-center items-center mb-2">
+                  <span className="text-center text-xs">Seleccionar Hora</span>
+                </header>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {["10:00", "12:00", "14:00", "16:00", "18:00"].map((time) => (
+                    <button
+                      key={time}
+                      className={`px-2 py-1 rounded-md text-xs ${
+                        selectedTime === time
+                          ? "bg-blue-500 text-white"
+                          : "bg-blue-300 text-white"
+                      }`}
+                      onClick={() => handleTimeSelect(time)}
+                    >
+                      {time}
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
-          </section>
-        </div>
-      </article>
+          </article>
+        </>
+      )}
 
       {/* Botón para enviar datos */}
-      <div className="px-4 mt-4">
+      <div className="px-4 mt-0">
         <button
           onClick={handleSubmit}
-          className="w-full bg-green-500 text-white px-4 py-2 rounded-md"
+          className={`w-full ${
+            isDisabled ? "bg-gray-600" : "bg-green-500"
+          }   text-white px-4 py-2 rounded-md`}
+          disabled={isDisabled}
         >
-          Confirmar Cita
+          {buttonText}
         </button>
       </div>
     </aside>
