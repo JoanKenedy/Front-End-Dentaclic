@@ -29,7 +29,6 @@ export function useData() {
   useEffect(() => {
     if (data.especialista) {
       setProfileData(data.especialista);
-      console.log("Datos de profileData:", data.especialista);
       getKeywords();
     }
   }, [data]);

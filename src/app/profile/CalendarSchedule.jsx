@@ -43,8 +43,7 @@ export const InfoCalendar = ({
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedEspeciality, setSelectedEspeciality] = useState("");
-  const [buttonText, setButtonText] = useState("Confirmar Cita");
-  const [isDisabled, setIsDisabled] = useState(false);
+
   // Manejadores de eventos
   const { personalData } = useContext(LoginContext);
 
@@ -85,9 +84,6 @@ export const InfoCalendar = ({
         return;
       }
 
-      setButtonText("Agendando...");
-      setIsDisabled(true);
-
       const endpointCreateCitas = `${API_BASE}citas/`;
 
       const response = await fetch(endpointCreateCitas, {
@@ -114,8 +110,7 @@ export const InfoCalendar = ({
           "Error al agendar la cita: " +
             (errorResponse.message || "No autorizado.")
         );
-        setButtonText("Confirmar Cita");
-        setIsDisabled(false);
+
         return;
       }
 
@@ -128,9 +123,6 @@ export const InfoCalendar = ({
     } catch (error) {
       console.error("Error al agendar la cita:", error);
       toast.error("Hubo un problema al agendar la cita.");
-
-      setButtonText("Confirmar Cita");
-      setIsDisabled(false);
     }
   };
 
@@ -162,123 +154,111 @@ export const InfoCalendar = ({
       <span className="flex gap-2 text-white bg-blue-500 px-4 py-2 rounded-t-xl">
         <CalendarMonth className="w-6 h-6" /> Agendar Cita
       </span>
-      {isDisabled ? (
-        <>
-          <article className="w-full px-4 text-center">
-            <p>
-              Tu cita esta pendiente, estamos a espera de ser aceptada por tu
-              especialista. Gracias por confiar en nosotros.
-            </p>
-            <ClockIcon className="w-28 h-28 m-auto" />
-          </article>
-        </>
-      ) : (
-        <>
-          <article className="w-full px-4">
-            <SelectLocation profileData={profileData} />
-          </article>
-          <article className="w-full px-4">
-            <SelectSpecialty
-              profileData={profileData}
-              onEspecialtyChange={handleEspecialtySelect}
-            />
-          </article>
-          <article className="px-4">
-            <div className="w-full grid grid-cols-7 gap-4">
-              {/* Selección de Mes */}
-              <section className="flex flex-col justify-center items-center col-span-7">
-                <header className="flex flex-col justify-center items-center mb-2">
-                  <span>Año en curso {new Date().getFullYear()}</span>
 
-                  <span className="text-center text-xs">Seleccionar Mes</span>
+      <article className="w-full px-4">
+        <SelectLocation profileData={profileData} />
+      </article>
+      <article className="w-full px-4">
+        <SelectSpecialty
+          profileData={profileData}
+          onEspecialtyChange={handleEspecialtySelect}
+        />
+      </article>
+      <article className="px-4">
+        <div className="w-full grid grid-cols-7 gap-4">
+          {/* Selección de Mes */}
+          <section className="flex flex-col justify-center items-center col-span-7">
+            <header className="flex flex-col justify-center items-center mb-2">
+              <span>Año en curso {new Date().getFullYear()}</span>
 
-                  <select
-                    className="text-xs px-2 py-1 border rounded-md"
-                    onChange={handleMonthChange}
-                    value={selectedMonth}
+              <span className="text-center text-xs">Seleccionar Mes</span>
+
+              <select
+                className="text-xs px-2 py-1 border rounded-md"
+                onChange={handleMonthChange}
+                value={selectedMonth}
+              >
+                <option value="">Seleccione un mes</option>
+                <option value="01">Enero</option>
+                <option value="02">Febrero</option>
+                <option value="03">Marzo</option>
+                <option value="04">Abril</option>
+                <option value="05">Mayo</option>
+                <option value="06">Junio</option>
+                <option value="07">Julio</option>
+                <option value="08">Agosto</option>
+                <option value="09">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+            </header>
+          </section>
+
+          {/* Selección de Día */}
+          {selectedMonth ? (
+            <section className="flex flex-wrap justify-center col-span-7">
+              <header className="flex flex-col justify-center items-center mb-2 w-full">
+                <span className="text-center text-xs">Seleccionar Día</span>
+              </header>
+              <div className="grid grid-cols-7 gap-2">
+                <div className="text-center">D</div>
+                <div className="text-center">L</div>
+                <div className="text-center">M</div>
+                <div className="text-center">M</div>
+                <div className="text-center">J</div>
+                <div className="text-center">V</div>
+                <div className="text-center">S</div>
+                {Array.from({ length: dayInMonth }).map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-8 h-8 flex justify-center items-center border rounded-md text-xs ${
+                      selectedDay === index + 1 ? "bg-blue-300 text-white" : ""
+                    }`}
+                    onClick={() => handleDaySelect(index + 1)}
                   >
-                    <option value="">Seleccione un mes</option>
-                    <option value="01">Enero</option>
-                    <option value="02">Febrero</option>
-                    <option value="03">Marzo</option>
-                    <option value="04">Abril</option>
-                    <option value="05">Mayo</option>
-                    <option value="06">Junio</option>
-                    <option value="07">Julio</option>
-                    <option value="08">Agosto</option>
-                    <option value="09">Septiembre</option>
-                    <option value="10">Octubre</option>
-                    <option value="11">Noviembre</option>
-                    <option value="12">Diciembre</option>
-                  </select>
-                </header>
-              </section>
+                    {index + 1}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : (
+            ""
+          )}
 
-              {/* Selección de Día */}
-              <section className="flex flex-wrap justify-center col-span-7">
-                <header className="flex flex-col justify-center items-center mb-2 w-full">
-                  <span className="text-center text-xs">Seleccionar Día</span>
-                </header>
-                <div className="grid grid-cols-7 gap-2">
-                  <div className="text-center">D</div>
-                  <div className="text-center">L</div>
-                  <div className="text-center">M</div>
-                  <div className="text-center">M</div>
-                  <div className="text-center">J</div>
-                  <div className="text-center">V</div>
-                  <div className="text-center">S</div>
-                  {Array.from({ length: dayInMonth }).map((_, index) => (
-                    <button
-                      key={index}
-                      className={`w-8 h-8 flex justify-center items-center border rounded-md text-xs ${
-                        selectedDay === index + 1
-                          ? "bg-blue-300 text-white"
-                          : ""
-                      }`}
-                      onClick={() => handleDaySelect(index + 1)}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-                </div>
-              </section>
-
-              {/* Selección de Hora */}
-              <section className="flex flex-col justify-center items-center col-span-7 mt-4">
-                <header className="flex flex-col justify-center items-center mb-2">
-                  <span className="text-center text-xs">Seleccionar Hora</span>
-                </header>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {["10:00", "12:00", "14:00", "16:00", "18:00"].map((time) => (
-                    <button
-                      key={time}
-                      className={`px-2 py-1 rounded-md text-xs ${
-                        selectedTime === time
-                          ? "bg-blue-500 text-white"
-                          : "bg-blue-300 text-white"
-                      }`}
-                      onClick={() => handleTimeSelect(time)}
-                    >
-                      {time}
-                    </button>
-                  ))}
-                </div>
-              </section>
+          {/* Selección de Hora */}
+          <section className="flex flex-col justify-center items-center col-span-7 mt-4">
+            <header className="flex flex-col justify-center items-center mb-2">
+              <span className="text-center text-xs">Seleccionar Hora</span>
+            </header>
+            <div className="flex flex-wrap justify-center gap-2">
+              {["10:00", "12:00", "14:00", "16:00", "18:00"].map((time) => (
+                <button
+                  key={time}
+                  className={`px-2 py-1 rounded-md text-xs ${
+                    selectedTime === time
+                      ? "bg-blue-500 text-white"
+                      : "bg-blue-300 text-white"
+                  }`}
+                  onClick={() => handleTimeSelect(time)}
+                >
+                  {time}
+                </button>
+              ))}
             </div>
-          </article>
-        </>
-      )}
+          </section>
+        </div>
+      </article>
 
       {/* Botón para enviar datos */}
       <div className="px-4 mt-0">
         <button
           onClick={handleSubmit}
-          className={`w-full ${
-            isDisabled ? "bg-gray-600" : "bg-green-500"
-          }   text-white px-4 py-2 rounded-md`}
-          disabled={isDisabled}
+          className="w-full ${
+          bg-green-500
+            text-white px-4 py-2 rounded-md"
         >
-          {buttonText}
+          Confirmar cita
         </button>
       </div>
     </aside>
