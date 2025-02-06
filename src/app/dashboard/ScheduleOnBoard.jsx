@@ -29,8 +29,8 @@ export const ScheduleOnBoard = ({ specialistId }) => {
   return (
     <article className="w-full h-full flex flex-col justify-center items-start p-4 bg-white rounded-xl shadow-button gap-3">
       <h3 className="text-xl font-semibold">Solicitud de cita</h3>
-      {citas.map((cita) => (
-        <div className="w-full flex flex-col gap-3">
+      {citas.map((cita, index) => (
+        <div className="w-full flex flex-col gap-3" key={index}>
           <div className="w-full flex justify-between items-center gap-2">
             <img
               className="rounded-full object-cover w-10 h-10 aspect-square"
