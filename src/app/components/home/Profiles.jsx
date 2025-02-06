@@ -36,7 +36,7 @@ export const Profiles = () => {
     process.env.NEXT_PUBLIC_API + "buscar/getBuscarAllEspecialistas";
 
   const { data, error, loading } = useFetch(endpointUsers);
-  console.log(data.especialistas);
+
   return (
     <section className="w-full flex justify-center items-center relative z-[1] py-10 dark:bg-darkLightColor">
       <div className="w-full max-w-6xl px-4">

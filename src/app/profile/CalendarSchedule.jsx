@@ -1,5 +1,5 @@
 import { useRef, useState, useContext, useEffect } from "react";
-import { CalendarMonth, ClockIcon, MapPin } from "@/app/components/icons/Icons";
+import { CalendarMonth } from "@/app/components/icons/Icons";
 import { SelectLocation } from "./SelectLocation";
 import { SelectSpecialty } from "./SelectSpecialty";
 import useOnClickOutside from "@/hooks/useOnClickOutside";
@@ -45,7 +45,7 @@ export const InfoCalendar = ({
   const [selectedEspeciality, setSelectedEspeciality] = useState("");
 
   // Manejadores de eventos
-  const { personalData } = useContext(LoginContext);
+  const { userData } = useContext(LoginContext);
 
   const handleMonthChange = (e) => setSelectedMonth(e.target.value);
   const handleDaySelect = (day) => setSelectedDay(day);
@@ -73,8 +73,10 @@ export const InfoCalendar = ({
       specialty: selectedEspeciality,
       time: selectedTime,
       specialist: profileData?._id,
-      paciente: personalData?.uid,
+      paciente: userData?._id,
     };
+    console.log(userData);
+    console.log(appointmentData);
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API;
@@ -118,8 +120,6 @@ export const InfoCalendar = ({
       console.log("Cita agendada con éxito:", responseData);
       toast.success("Cita agendada con éxito.");
       setShowSchedule(false);
-
-      setButtonText("Esperando a ser aceptada");
     } catch (error) {
       console.error("Error al agendar la cita:", error);
       toast.error("Hubo un problema al agendar la cita.");

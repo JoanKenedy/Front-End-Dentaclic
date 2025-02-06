@@ -17,7 +17,6 @@ export function useData() {
   const getUserEndpoint =
     process.env.NEXT_PUBLIC_API + "buscar/especialistas/" + id;
   const { data, loading, error } = useFetch(getUserEndpoint);
-  console.log("Datos de la API:", data);
 
   const getKeywords = () => {
     if (data.especialista.especialidades) {
