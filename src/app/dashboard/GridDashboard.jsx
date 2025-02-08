@@ -121,7 +121,7 @@ const GridDashboard = () => {
 
   return (
     <div className="w-full flex flex-col justify-center items-center">
-      <div className="w-full max-w-7xl justify-end items-end relative hidden lg:flex">
+      <div className="w-full md:max-w-6xl justify-end items-end relative hidden lg:flex">
         <button
           onClick={isDraggable ? handleSaveLayout : handleDragLayout}
           className="hidden px-4 py-2 bg-white border absolute -top-20 right-8 rounded-lg lg:block xl:right-7"
@@ -129,10 +129,10 @@ const GridDashboard = () => {
           {isDraggable ? "Guardar" : "Personalizar Dashboard"}
         </button>
       </div>
-      <div className="w-full flex justify-center items-center">
-        <div className="w-[1200px] lg:w-[1000px] xl:w-[1200px]">
+      <div className="w-full flex justify-center items-center md:max-w-6xl ">
+        <div className="w-[1000px] md:w-full m-auto flex justify-center">
           <ResponsiveGridLayout
-            className="layout select-none grid justify-items-center w-[calc(100%_-_30px)] lg:block"
+            className="layout select-none flex justify-center w-full lg:block"
             layouts={layouts}
             autoSize
             rowHeight={30}
@@ -141,7 +141,7 @@ const GridDashboard = () => {
             margin={[15, 15]}
             isDraggable={isDraggable}
             isResizable={isDraggable}
-            breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+            breakpoints={{ lg: 1400, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 12, md: 12, sm: 12, xs: 12, xxs: 4 }}
             onLayoutChange={onLayoutChange}
           >

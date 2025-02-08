@@ -43,6 +43,7 @@ export const InfoCalendar = ({
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedEspeciality, setSelectedEspeciality] = useState("");
+  const [isAlert, setIsAlert] = useState(false);
 
   // Manejadores de eventos
   const { userData } = useContext(LoginContext);
@@ -116,10 +117,12 @@ export const InfoCalendar = ({
         return;
       }
 
-      const responseData = await response.json();
-      console.log("Cita agendada con éxito:", responseData);
       toast.success("Cita agendada con éxito.");
       setShowSchedule(false);
+      setIsAlert(true);
+      setTimeout(() => {
+        window.location.href = "/profile-patient";
+      }, 2000);
     } catch (error) {
       console.error("Error al agendar la cita:", error);
       toast.error("Hubo un problema al agendar la cita.");
@@ -258,7 +261,7 @@ export const InfoCalendar = ({
           bg-green-500
             text-white px-4 py-2 rounded-md"
         >
-          Confirmar cita
+          {isAlert ? "Se ha enviado tu solicitud de cita" : "Solicitar cita"}
         </button>
       </div>
     </aside>

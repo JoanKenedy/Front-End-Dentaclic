@@ -72,11 +72,19 @@ export const Schedules = () => {
                 {/* Especialidad */}
               </div>
               <div className="flex gap-2">
-                <button className="p-2 bg-green-500 rounded-full">
-                  <Check className="w-5 text-white" />
-                </button>
-                <button className="p-2 bg-red-500 rounded-full">
-                  <Close className="w-5 text-white" />
+                <button
+                  className={`py-2 px-5 ${
+                    cita.status === "pendiente"
+                      ? "bg-orange-400"
+                      : cita.status === "aceptada"
+                      ? "bg-green-500"
+                      : cita.status === "rechazada"
+                      ? "bg-red-500"
+                      : "bg-cyan-950"
+                  }   rounded-full flex justify-between items-center gap-3`}
+                >
+                  <Check className="w-5 text-white" />{" "}
+                  <p className="text-white">{cita.status}</p>
                 </button>
               </div>
             </div>
