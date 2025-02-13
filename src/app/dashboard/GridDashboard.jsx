@@ -9,16 +9,80 @@ import { toast } from "sonner";
 import { ScheduleOnBoard } from "./ScheduleOnBoard";
 import { Publication } from "./Publication";
 import { Schedule } from "./Schedule";
-import { NextAppointment } from "./NextAppoinment";
+
 import { Chat } from "./Chat";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const GridDashboard = () => {
-  const { userData } = useContext(LoginContext);
+  const { userData} = useContext(LoginContext);
   const [isDraggable, setIsDraggable] = useState(false);
   const [width, setWidth] = useState(100);
+  const [citas, setCitas] = useState([]);
+  const [citaId, setCitaId] = useState(null);
+  const [estatus, setEstatus] = useState("pendiente");
+  const user = useRef();
   const savedLayout = useRef();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      user.current = JSON.parse(window.localStorage.getItem("user"));
+    }
+  }, []);
+
+  const handleSetCitas = (citaId, estatus) => {
+    setCitaId(citaId);
+    setEstatus(estatus);
+  };
+
+  console.log(userData);
+  console.log(process.env.NEXT_PUBLIC_API + "citas/doctor/" + userData?._id);
+  useEffect(() => {
+    if (userData?._id) {
+      const endpointCitas =
+        process.env.NEXT_PUBLIC_API + "citas/doctor/" + userData?._id;
+      fetch(endpointCitas, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((response) => response.json())
+        .then((data) => setCitas(data.citasEspeciaslita))
+        .catch((error) => console.log("Error", error));
+    }
+  }, [userData?._id]);
+  console.log(citas);
+  useEffect(() => {
+    if (citaId) {
+      const enpointStatusCita = process.env.NEXT_PUBLIC_API + "citas/" + citaId;
+      fetch(enpointStatusCita, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "x-token": user.current.token,
+        },
+        body: JSON.stringify({
+          especialista: userData?._id,
+          status: estatus,
+        }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            const text = response.text();
+            throw new Error(text);
+          } else {
+            
+            setCitas(citas);
+            localStorage.setItem("citas", JSON.stringify(citas));
+            return response.json();
+          }
+        })
+        .catch((error) => {
+          console.error("Error al actualizar el estatus de la cita:", error);
+        });
+    }
+  }, [citaId, estatus, citas]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -32,38 +96,37 @@ const GridDashboard = () => {
     } else {
       return {
         lg: [
-          { i: "ScheduleOnBoard", x: 4, y: 4, w: 4, h: 5 },
+          { i: "ScheduleOnBoard", x: 4, y: 4, w: 6, h: 5 },
           { i: "publication", x: 0, y: 0, w: 3, h: 4 },
           { i: "Schedule", x: 3, y: 0, w: 2, h: 8 },
-          { i: "NextAppointment", x: 6, y: 0, w: 3, h: 6 },
+
           { i: "Chat", x: 0, y: 1, w: 4, h: 8 },
         ],
         md: [
-          { i: "ScheduleOnBoard", x: 0, y: 0, w: 4, h: 5 },
-          { i: "NextAppointment", x: 4, y: 0, w: 3, h: 6 },
-          { i: "Schedule", x: 7, y: 0, w: 4, h: 8 },
-          { i: "publication", x: 0, y: 4, w: 4, h: 4 },
-          { i: "Chat", x: 4, y: 5, w: 6, h: 8 },
+          { i: "ScheduleOnBoard", x: 0, y: 0, w: 7, h: 5 },
+
+          { i: "Schedule", x: 7, y: 0, w: 5, h: 8 },
+          { i: "publication", x: 0, y: 4, w: 2, h: 4 },
+          { i: "Chat", x: 4, y: 5, w: 2, h: 8 },
         ],
         sm: [
           { i: "ScheduleOnBoard", x: 0, y: 0, w: 2, h: 5 },
           { i: "publication", x: 0, y: 26, w: 6, h: 4 },
           { i: "Schedule", x: 0, y: 4, w: 2, h: 8 },
-          { i: "NextAppointment", x: 0, y: 12, w: 2, h: 6 },
+
           { i: "Chat", x: 0, y: 18, w: 2, h: 8 },
         ],
         xs: [
           { i: "ScheduleOnBoard", x: 0, y: 0, w: 12, h: 5 },
           { i: "publication", x: 0, y: 23, w: 12, h: 5 },
           { i: "Schedule", x: 0, y: 4, w: 12, h: 8 },
-          { i: "NextAppointment", x: 0, y: 12, w: 12, h: 6 },
+
           { i: "Chat", x: 0, y: 18, w: 12, h: 8 },
         ],
         xxs: [
           { i: "ScheduleOnBoard", x: 0, y: 0, w: 6, h: 5 },
           { i: "publication", x: 0, y: 26, w: 6, h: 4 },
           { i: "Schedule", x: 0, y: 4, w: 6, h: 8 },
-          { i: "NextAppointment", x: 0, y: 12, w: 6, h: 6 },
           { i: "Chat", x: 0, y: 18, w: 6, h: 8 },
         ],
       };
@@ -154,7 +217,7 @@ const GridDashboard = () => {
                   isDraggable ? "inline-block" : "hidden"
                 }`}
               />
-              <ScheduleOnBoard specialistId={userData?._id} />
+              <ScheduleOnBoard citas={citas} onSetCitas={handleSetCitas} />
             </div>
             <div
               key="publication"
@@ -176,19 +239,9 @@ const GridDashboard = () => {
                   isDraggable ? "inline-block" : "hidden"
                 }`}
               />
-              <Schedule />
+              <Schedule specialistId={userData?._id} />
             </div>
-            <div
-              key="NextAppointment"
-              className={`relative ${isDraggable ? "cursor-grab" : ""}`}
-            >
-              <div
-                className={`absolute z-10 bg-blue-400/40 rounded-xl w-full h-full ${
-                  isDraggable ? "inline-block" : "hidden"
-                }`}
-              />
-              <NextAppointment />
-            </div>
+
             <div
               key="Chat"
               className={`relative ${isDraggable ? "cursor-grab" : ""}`}
