@@ -14,12 +14,14 @@ export const SelectSpecialty = ({ profileData, onEspecialtyChange }) => {
   useOnClickOutside(selectElement, handleClickOutsideFn);
 
   useEffect(() => {
-    if (profileData && profileData?.especialidades.length > 0) {
-      const firstSpecialty = profileData?.especialidades[0];
+    if (profileData?.especialidades?.length > 0) {
+      const firstSpecialty = profileData.especialidades[0];
       setSelected(firstSpecialty);
-      onEspecialtyChange(firstSpecialty);
+      if (typeof onEspecialtyChange === "function") {
+        onEspecialtyChange(firstSpecialty);
+      }
     }
-  }, [profileData]);
+  }, [profileData, onEspecialtyChange]);
 
   const handleSelected = (specialty) => {
     setSelected(specialty);

@@ -15,7 +15,7 @@ import { Chat } from "./Chat";
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const GridDashboard = () => {
-  const { userData} = useContext(LoginContext);
+  const { userData } = useContext(LoginContext);
   const [isDraggable, setIsDraggable] = useState(false);
   const [width, setWidth] = useState(100);
   const [citas, setCitas] = useState([]);
@@ -35,8 +35,6 @@ const GridDashboard = () => {
     setEstatus(estatus);
   };
 
-  console.log(userData);
-  console.log(process.env.NEXT_PUBLIC_API + "citas/doctor/" + userData?._id);
   useEffect(() => {
     if (userData?._id) {
       const endpointCitas =
@@ -72,8 +70,11 @@ const GridDashboard = () => {
             const text = response.text();
             throw new Error(text);
           } else {
-            
-            setCitas(citas);
+            setCitas((citas) =>
+              citas.map((cita) =>
+                cita._id === citaId ? { ...cita, status: estatus } : cita
+              )
+            );
             localStorage.setItem("citas", JSON.stringify(citas));
             return response.json();
           }
@@ -239,7 +240,7 @@ const GridDashboard = () => {
                   isDraggable ? "inline-block" : "hidden"
                 }`}
               />
-              <Schedule specialistId={userData?._id} />
+              <Schedule specialistId={userData?._id} citas={citas} />
             </div>
 
             <div

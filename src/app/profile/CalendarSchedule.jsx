@@ -44,7 +44,10 @@ export const InfoCalendar = ({
   const [selectedTime, setSelectedTime] = useState("");
   const [selectedEspeciality, setSelectedEspeciality] = useState("");
   const [isAlert, setIsAlert] = useState(false);
-
+  const [citas, setCitas] = useState([]);
+  const [error, setError] = useState(null);
+  const [disabled, setDisabled] = useState(false); // Estado para habilitar/deshabilitar el botón
+  const [buttonText, setButtonText] = useState("Solicitar cita"); // Estado para el texto del botón
   // Manejadores de eventos
   const { userData } = useContext(LoginContext);
 
@@ -76,8 +79,6 @@ export const InfoCalendar = ({
       specialist: profileData?._id,
       paciente: userData?._id,
     };
-    console.log(userData);
-    console.log(appointmentData);
 
     try {
       const API_BASE = process.env.NEXT_PUBLIC_API;
@@ -145,6 +146,59 @@ export const InfoCalendar = ({
   };
 
   const dayInMonth = getDayInMonth(selectedMonth);
+
+  useEffect(() => {
+    if (userData?._id) {
+      // Nos aseguramos de que userData tenga un ID
+      const API_BASE = process.env.NEXT_PUBLIC_API;
+      const endpointConsultaCitas = `${API_BASE}citas/${userData?._id}`;
+
+      fetch(endpointConsultaCitas, {
+        method: "GET",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Error al obtener las citas");
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setCitas(data.citas); // Guardamos las citas en el estado
+        })
+        .catch((error) => {
+          setError(error.message); // En caso de error, lo guardamos en el estado
+        });
+    }
+  }, [userData?._id]);
+  console.log(citas);
+
+  useEffect(() => {
+    const filterAppointments = () => {
+      // Filtrar citas que pertenecen al especialista actual
+      const filteredAppointments = citas.filter(
+        (cita) => cita.especialista._id === profileData?._id
+      );
+
+      let citaAceptada = false;
+
+      filteredAppointments.forEach((citaA) => {
+        if (citaA.status === "aceptada" || citaA.status === "pendiente") {
+          citaAceptada = true;
+        }
+      });
+
+      if (citaAceptada) {
+        setDisabled(true);
+        setButtonText("Cita pendiente o aceptada");
+      } else {
+        setDisabled(false);
+        setButtonText("Solicitar cita");
+      }
+    };
+
+    filterAppointments();
+  }, [citas]);
+
   return (
     <aside
       ref={selectElement}
@@ -257,11 +311,12 @@ export const InfoCalendar = ({
       <div className="px-4 mt-0">
         <button
           onClick={handleSubmit}
-          className="w-full ${
-          bg-green-500
-            text-white px-4 py-2 rounded-md"
+          disabled={disabled}
+          className={`w-full ${
+            disabled ? "bg-gray-400 cursor-not-allowed" : "bg-green-500"
+          } text-white px-4 py-2 rounded-md`}
         >
-          {isAlert ? "Se ha enviado tu solicitud de cita" : "Solicitar cita"}
+          {buttonText}
         </button>
       </div>
     </aside>
