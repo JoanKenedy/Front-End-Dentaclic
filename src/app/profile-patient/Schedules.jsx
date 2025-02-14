@@ -3,6 +3,7 @@
 import { LoginContext } from "@/context/login";
 import { useContext, useEffect, useState, useRef } from "react";
 import { Check, Close } from "../components/icons/Icons";
+import { BiSolidDirectionRight } from "react-icons/bi";
 
 export const Schedules = () => {
   const [citas, setCitas] = useState([]);
@@ -68,8 +69,14 @@ export const Schedules = () => {
                 {/* Hora de la cita */}
                 <span className="text-sm text-gray-500">
                   Especialidad: {cita.especialidad}
-                </span>{" "}
+                </span>
                 {/* Especialidad */}
+                <a
+                  href={cita.link}
+                  className="text-sm text-gray-500 flex items-center gap-2"
+                >
+                  <BiSolidDirectionRight className="text-lg" /> Ubicación
+                </a>
               </div>
               <div className="flex gap-2">
                 <button

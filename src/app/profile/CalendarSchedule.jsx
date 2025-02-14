@@ -33,6 +33,7 @@ export const InfoCalendar = ({
   isProfile,
 }) => {
   const user = useRef();
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       user.current = JSON.parse(window.localStorage.getItem("user"));
@@ -50,7 +51,8 @@ export const InfoCalendar = ({
   const [buttonText, setButtonText] = useState("Solicitar cita"); // Estado para el texto del botón
   // Manejadores de eventos
   const { userData } = useContext(LoginContext);
-
+  const linkUbicacion = `https://www.google.com.mx/maps/search/${profileData?.latitud},${profileData?.longitud}`;
+  console.log(linkUbicacion);
   const handleMonthChange = (e) => setSelectedMonth(e.target.value);
   const handleDaySelect = (day) => setSelectedDay(day);
   const handleTimeSelect = (time) => setSelectedTime(time);
@@ -76,6 +78,7 @@ export const InfoCalendar = ({
       day: selectedDay,
       specialty: selectedEspeciality,
       time: selectedTime,
+      link: linkUbicacion,
       specialist: profileData?._id,
       paciente: userData?._id,
     };
@@ -102,6 +105,7 @@ export const InfoCalendar = ({
           mes: appointmentData.month,
           especialidad: appointmentData.specialty,
           hora: appointmentData.time,
+          link: appointmentData.link,
           especialista: appointmentData.specialist,
           paciente: appointmentData.paciente,
         }),
